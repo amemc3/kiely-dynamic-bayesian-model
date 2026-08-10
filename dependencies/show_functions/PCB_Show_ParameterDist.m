@@ -1,0 +1,143 @@
+%% PCB_Show_ParameterDist
+% shows boxplots of parameter distributions for BID4 model
+function PCB_Show_ParameterDist(best_set, par, colors)
+
+% color
+if strcmp(colors,'teal')
+    col = [0.0902    0.5294    0.4588]; %dark teal
+elseif strcmp(colors,'rasp')
+    col = [0.7686    0.1529    0.3490]; %raspberry
+elseif strcmp(colors,'orange')
+    col = [0.9294    0.6941    0.1255]; %orange
+else
+    col = [0 0 0]; % black
+end
+
+if strcmp(par,'alphabeta')
+    nP = [6,7];
+    yL = 0;
+    yH = 25;
+    yd = 1;
+    parlabs = {'alpha','beta'};
+    XT = [1,2];
+elseif strcmp(par,'rurc')
+    nP = [8,9];
+    yL = 0;
+    yH = 1;
+    yd = .1;
+    parlabs = {'ru','rc'};
+    XT = [1,2];
+elseif strcmp(par,'deltaAB')
+    nP = 1;
+    yL = -25;
+    yH = 25;
+    yd = 1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par,'deltaUC')
+    nP = 2;
+    yL = -1;
+    yH = 1;
+    yd = .1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par,'alpha')
+    nP = 6;
+    yL = 0;
+    yH = 25;
+    yd = 1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par,'beta')
+    nP = 7;
+    yL = 0;
+    yH = 25;
+    yd = 1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par,'ru')
+    nP = 8;
+    yL = 0;
+    yH = 1;
+    yd = .1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par,'rc')
+    nP = 9;
+    yL = 0;
+    yH = 1;
+    yd = .1;
+    parlabs = par;
+    XT = 1;
+elseif strcmp(par, 'h')
+    nP = 3;
+    yL = 0;
+    yH = 1;
+    yd = .1;
+    parlabs = par;
+    XT = 1;
+end
+
+ns = length(best_set);
+
+patchSaturation = 0.4;
+patchC = col + (1-col) * (1-patchSaturation);
+
+if length(nP) == 1
+    if nP == 1 % delta alpha beta
+        Y = best_set(:,6) - best_set(:,7);
+    elseif nP == 2 % delta ru rc
+        Y = best_set(:,8) - best_set(:,9);
+    else
+        Y = best_set(:,nP);
+    end
+    x = [ones(ns,1)];
+    patchColor = patchC;
+else
+    Y = [best_set(:,nP(1)),best_set(:,nP(2))];
+    x = [ones(ns,1), ones(ns,1)*2];
+    patchColor = [patchC;patchC];
+end
+
+bp = boxplot(Y,"Colors",'k');
+h = findobj(gca,'Tag','Box');
+for j=1:length(h)
+    patch(get(h(j),'XData'),get(h(j),'YData'),patchColor(j,:),'FaceAlpha',1);
+end
+set(bp,'LineWidth',1)
+% change outliar marker
+set(bp,'Marker','.')
+set(bp,'MarkerSize',1)
+% set(bp,'MarkerEdgeColor',[1 1 1])
+
+% this sends the patches to the back of the graph
+set(gca,'children',flipud(get(gca,'children')))
+
+hold on
+s = swarmchart(x,Y,'MarkerEdgeColor',[1 1 1]);
+
+s(1).LineWidth = 1;
+s(1).SizeData = 30;
+s(1).XJitterWidth = 0.1;
+s(1).MarkerFaceColor = col;
+if length(nP) == 2
+    s(2).LineWidth = 1;
+    s(2).SizeData = 30;
+    s(2).XJitterWidth = 0.1;
+    s(2).MarkerFaceColor = col;
+end
+
+
+% plot subject lines
+% for iS = 1:length(Y)
+%     plot(Y(iS,:),'Color',col,'LineWidth',0.25)
+% end
+
+xticks(XT)
+xticklabels(parlabs)
+ylim([yL-yd,yH+yd])
+yticks([yL yH])
+
+
+
+
